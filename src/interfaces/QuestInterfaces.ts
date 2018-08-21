@@ -6,6 +6,7 @@ export enum QuestType {
 export interface Objective {
     id: string
     text: string
+    completed: boolean
 }
 
 export interface Quest {
@@ -28,6 +29,7 @@ export interface QuestUpdate {
 export interface ObjectiveUpdate {
     questId: string
     objectiveId: string
-    newDescription: string
+    newDescription?: string
+    completed?: boolean
 }
 

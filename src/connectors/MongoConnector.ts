@@ -1,10 +1,13 @@
-import {Collection, connect, Db, MongoClientOptions} from "mongodb";
+import {Collection, connect, Db, MongoClient, MongoClientOptions} from "mongodb";
 import * as log from "winston";
 import {Configuration} from "../config";
-import {Objective, ObjectiveUpdate, Quest, QuestUpdate} from "../interfaces/MongoInterfaces";
+import {Objective, ObjectiveUpdate, Quest, QuestUpdate} from "../interfaces/QuestInterfaces";
+import {User} from "../interfaces/AuthInterfaces";
 
-let baseDb:Db|null = null;
-let questConnectorInstance:QuestCollectionConnector|null = null;
+let connectedClient: MongoClient|null = null;
+let baseDb: Db|null = null;
+let questConnectorInstance: QuestCollectionConnector|null = null;
+let userConnectorInstance: UserCollectionConnector|null = null;
 
 async function mongoConnectionSingleton(config:Configuration) : Promise<Db> {
     if (baseDb) return baseDb;
@@ -12,7 +15,7 @@ async function mongoConnectionSingleton(config:Configuration) : Promise<Db> {
     // No try here, let's just throw an error if need be
     const mongoUrl = `mongodb://${config.mongo.hostname}:${config.mongo.port}/`;
     log.info(`Connecting to the database at ${mongoUrl}`);
-    const client = await connect(mongoUrl, <MongoClientOptions> {
+    connectedClient = await connect(mongoUrl, <MongoClientOptions> {
         logger: log,
         auth: {
             user: config.mongo.credentials.username,
@@ -23,8 +26,36 @@ async function mongoConnectionSingleton(config:Configuration) : Promise<Db> {
     });
 
     log.info("Connection successful.");
-    baseDb = client.db(config.mongo.baseDatabase);
+    baseDb = connectedClient.db(config.mongo.baseDatabase);
     return baseDb;
+}
+
+export async function disconnectFromDb() {
+    if (connectedClient) {
+        await connectedClient.close();
+        log.info("Disconnected from mongo.");
+        connectedClient = null;
+        baseDb = null;
+    }
+
+    if (questConnectorInstance) questConnectorInstance = null;
+    if (userConnectorInstance) userConnectorInstance = null;
+}
+
+function scrubMongoId(mongoEntity: any|null) : any|null{
+    if (mongoEntity) delete mongoEntity._id;
+    return mongoEntity;
+}
+
+interface ObjectiveUpdateOperation {
+    "objectives.$.text"?: string
+    "objectives.$.completed"?: boolean
+}
+
+export class EmptyUpdateError extends Error {
+    constructor(message: string) {
+        super(message);
+    }
 }
 
 export class QuestCollectionConnector {
@@ -42,12 +73,12 @@ export class QuestCollectionConnector {
     async getQuestsFilteringVisibility(visibleOnly:boolean) : Promise<Quest[]> {
         const query = visibleOnly ? {visible: true} : {};
         const retVal = await this.backingCollection.find(query).toArray();
-        return retVal.map(QuestCollectionConnector.scrubMongoId);
+        return retVal.map(scrubMongoId);
     }
 
     async addQuest(q: Quest) : Promise<boolean> {
         const result = await this.backingCollection.insertOne(q);
-        QuestCollectionConnector.scrubMongoId(q);
+        scrubMongoId(q);
         return result.insertedCount === 1;
     }
 
@@ -64,6 +95,9 @@ export class QuestCollectionConnector {
         const quest = await this.findQuestById(update.id);
         if (!quest) return false;
 
+        if (!update.description && !update.questType && !update.sourceRegion)
+            throw new EmptyUpdateError("Did not provide any fields for update.");
+
         if (update.description) quest.description = update.description;
         if (update.questType) quest.questType = update.questType;
         if (update.sourceRegion) quest.sourceRegion = update.sourceRegion;
@@ -73,10 +107,19 @@ export class QuestCollectionConnector {
     }
 
     async updateObjective(update: ObjectiveUpdate) : Promise<boolean> {
+        const dbTransaction: ObjectiveUpdateOperation = {};
+
+        if (!update.newDescription && !update.completed)
+            throw new EmptyUpdateError("Did not provide any fields for update.");
+
+        if (update.newDescription) dbTransaction["objectives.$.text"] = update.newDescription;
+        if (update.completed) dbTransaction["objectives.$.completed"] = update.completed;
+
         const result = await this.backingCollection.updateOne(
             {id: update.questId, "objectives.id": update.objectiveId},
-            {$set: {"objectives.$.text": update.newDescription}}
+            {$set: dbTransaction}
         );
+
         return result.modifiedCount === 1 && result.result.ok === 1;
     }
 
@@ -93,22 +136,46 @@ export class QuestCollectionConnector {
         return result.modifiedCount === 1 && result.result.ok === 1;
     }
 
-    private async findQuestById(id: string) : Promise<Quest|null> {
-        return this.backingCollection.findOne({id});
+    async findQuestById(id: string) : Promise<Quest|null> {
+        let foundQuest = await this.backingCollection.findOne({id});
+        if (foundQuest) foundQuest = scrubMongoId(foundQuest);
+        return foundQuest;
     }
 
-    private static scrubMongoId(quest: Quest) : Quest{
-        delete quest._id;
-        return quest;
+}
+
+export class UserCollectionConnector {
+    private backingCollection: Collection<User>;
+
+    constructor(db: Db) {
+        const collectionName = "users";
+        this.backingCollection = db.collection(collectionName);
+    }
+
+    async addUser(user: User) : Promise<boolean> {
+        const result = await this.backingCollection.insertOne(user);
+        scrubMongoId(user);
+        return result.insertedCount === 1 && result.result.ok === 1;
+    }
+
+    async getUser(username: string) : Promise<User|null> {
+        return scrubMongoId(await this.backingCollection.findOne({username}));
     }
 }
 
 export default {
-    questCollectionConnectorInstance: async function(config: Configuration) {
+    questCollectionConnectorInstance: async function(config: Configuration) : Promise<QuestCollectionConnector> {
         if (questConnectorInstance) return questConnectorInstance;
 
         const db = await mongoConnectionSingleton(config);
         questConnectorInstance = new QuestCollectionConnector(db);
         return questConnectorInstance;
+    },
+    userCollectionConnectorInstance: async function(config: Configuration) : Promise<UserCollectionConnector> {
+        if (userConnectorInstance) return userConnectorInstance;
+
+        const db = await mongoConnectionSingleton(config);
+        userConnectorInstance = new UserCollectionConnector(db);
+        return userConnectorInstance;
     }
 }

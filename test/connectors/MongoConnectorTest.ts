@@ -2,31 +2,21 @@ import {it, suite} from "mocha";
 import * as chai from "chai";
 import {expect} from "chai";
 import * as Docker from "dockerode";
-import {Container, ContainerCreateOptions} from "dockerode";
-import {DEFAULT_ASYNC_TIMEOUT, DOCKER_STARTUP_TIME, holdUp} from "../testUtil";
-import {Quest, QuestType} from "../../src/interfaces/MongoInterfaces";
+import {Container} from "dockerode";
+import {DEFAULT_ASYNC_TIMEOUT, DOCKER_STARTUP_TIME, holdUp, UpToDateCreateOptions} from "../testUtil";
+import {Quest, QuestType} from "../../src/interfaces/QuestInterfaces";
 import * as chaiAsPromised from "chai-as-promised";
-import dbInjectors from "../../src/connectors/MongoConnector";
+import dbInjectors, {disconnectFromDb, EmptyUpdateError} from "../../src/connectors/MongoConnector";
 import TestConfig from "../TestConfig";
-import * as log from "winston";
-import uuid = require("uuid");
+import {v4 as uuid} from "uuid";
+import {User} from "../../src/interfaces/AuthInterfaces";
 
 chai.use(chaiAsPromised);
 
-interface HostPortBinding {
-    HostPort: string
-}
-
-interface UpToDateCreateOptions extends ContainerCreateOptions {
-    PortBindings?: {
-        [key:string]: HostPortBinding[]
-    },
-    Binds?: string[]
-}
 suite("MongoConnector", function() {
-    let container:Container;
-    let docker = new Docker();
-    let containersToDelete:Container[] = [];
+    let container : Container;
+    const docker = new Docker();
+    const containersToDelete:Container[] = [];
     const quest: Quest = {
         id: uuid(),
         visible: true,
@@ -34,9 +24,14 @@ suite("MongoConnector", function() {
         description: "A description",
         sourceRegion: "hortimony",
         objectives: [
-            {id: uuid(), text: "An objective"},
-            {id: uuid(), text: "Second objective"}
+            {id: uuid(), text: "An objective", completed: false},
+            {id: uuid(), text: "Second objective", completed:false}
         ]
+    };
+    const user: User = {
+        username: "sampleUser",
+        passwordHash: "$2b$10$zG4SZGZZKsUBZm3d5PnWteg7mOwjhefIQqRQXDW9Wu92GjUlhOeD6",
+        passwordSalt: "$2b$10$zG4SZGZZKsUBZm3d5PnWte"
     };
 
     before(async function() {
@@ -69,6 +64,7 @@ suite("MongoConnector", function() {
 
     afterEach(async function() {
         this.timeout(DEFAULT_ASYNC_TIMEOUT);
+        await disconnectFromDb();
 
         if (container) {
             await container.stop();
@@ -113,6 +109,48 @@ suite("MongoConnector", function() {
            expect(quests[0].questType).to.equal(QuestType.SIDE);
         });
 
+        it("throws an exception on empty quest updates", async function() {
+            this.timeout(DEFAULT_ASYNC_TIMEOUT);
+
+            const connection = await dbInjectors.questCollectionConnectorInstance(TestConfig);
+
+            expect(connection).to.not.be.null;
+            await connection.addQuest(quest);
+            return expect(connection.updateQuest({id: quest.id})).to.eventually.be.rejectedWith(EmptyUpdateError);
+        });
+
+        it("can update individual objectives", async function() {
+            this.timeout(DEFAULT_ASYNC_TIMEOUT);
+
+            const connection = await dbInjectors.questCollectionConnectorInstance(TestConfig);
+            const expectedUpdatedQuest: Quest = JSON.parse(JSON.stringify(quest));
+            expectedUpdatedQuest.objectives[0].text = "New quest description";
+            expectedUpdatedQuest.objectives[0].completed = true;
+
+            expect(connection).to.not.be.null;
+
+            await connection.addQuest(quest);
+            const transactionSuccess = await connection.updateObjective({
+                questId: quest.id,
+                objectiveId: quest.objectives[0].id,
+                newDescription: expectedUpdatedQuest.objectives[0].text,
+                completed: expectedUpdatedQuest.objectives[0].completed
+            });
+            expect(transactionSuccess).to.be.true;
+
+            return expect(connection.findQuestById(quest.id)).to.eventually.deep.equal(expectedUpdatedQuest);
+        });
+
+        it("throws an exception on empty objective updates", async function() {
+            this.timeout(DEFAULT_ASYNC_TIMEOUT);
+
+            const connection = await dbInjectors.questCollectionConnectorInstance(TestConfig);
+
+            expect(connection).to.not.be.null;
+            await connection.addQuest(quest);
+            return expect(connection.updateObjective({questId: quest.id, objectiveId: quest.objectives[0].id})).to.eventually.be.rejectedWith(EmptyUpdateError);
+        });
+
         it("can filter on quest visibility", async function() {
             this.timeout(DEFAULT_ASYNC_TIMEOUT);
 
@@ -137,46 +175,41 @@ suite("MongoConnector", function() {
                 .and.have.deep.members([quest, invisibleQuest]);
         });
 
-        it("performs expected ops", async function() {
+        it("can delete a quest", async function() {
             this.timeout(DEFAULT_ASYNC_TIMEOUT);
 
-            const questConnector = await dbInjectors.questCollectionConnectorInstance(TestConfig);
-            const transactionSuccess = await questConnector.addQuest({
-                id: uuid(),
-                visible: true,
-                questType: QuestType.MAIN,
-                description: "A description",
-                sourceRegion: "hortimony",
-                objectives: [
-                    {id: uuid(), text: "An objective"},
-                    {id: uuid(), text: "Second objective"}
-                ]
-            });
-            log.info(`Successful add: ${transactionSuccess}`);
+            const connection = await dbInjectors.questCollectionConnectorInstance(TestConfig);
+            expect(connection).to.not.be.null;
 
-            let currentQuests = await questConnector.getQuests();
-            log.info("Current quests.", {currentQuests});
+            await connection.addQuest(quest);
+            await connection.deleteQuest(quest.id);
+            return expect(connection.getQuests()).to.eventually.be.an("array").and.be.empty;
+        });
 
-            await questConnector.addObjective(currentQuests[0].id, {id: uuid(), text: "Objective update!"});
-            currentQuests = await questConnector.getQuests();
-            log.info("Updated current quests.", {currentQuests});
+        it("can delete an objective", async function() {
+            this.timeout(DEFAULT_ASYNC_TIMEOUT);
 
-            await questConnector.updateQuest({id: currentQuests[0].id, sourceRegion: "pampenheim", questType: QuestType.SIDE});
-            currentQuests = await questConnector.getQuests();
-            log.info("Updated current quests.", {currentQuests});
+            const expectedObject: Quest = JSON.parse(JSON.stringify(quest));
+            expectedObject.objectives.splice(0, 1);
+            const connection = await dbInjectors.questCollectionConnectorInstance(TestConfig);
+            expect(connection).to.not.be.null;
 
-            await questConnector.updateObjective({questId: currentQuests[0].id, objectiveId: currentQuests[0].objectives[0].id, newDescription: "Updated description"});
-            currentQuests = await questConnector.getQuests();
-            log.info("Updated current quests.", {currentQuests});
-
-            await questConnector.deleteObjective(currentQuests[0].id, currentQuests[0].objectives[0].id);
-            currentQuests = await questConnector.getQuests();
-            log.info("Updated current quests.", {currentQuests});
-
-            await questConnector.deleteQuest(currentQuests[0].id);
-            currentQuests = await questConnector.getQuests();
-            log.info("Updated current quests.", {currentQuests});
-            // TODO make this test more rigorous
+            await connection.addQuest(quest);
+            await connection.deleteObjective(quest.id, quest.objectives[0].id);
+            return expect(connection.getQuests()).to.eventually.deep.equal([expectedObject]);
         });
     });
+
+    suite("User collection connector", function() {
+        it("can add and retrieve users", async function() {
+            this.timeout(DEFAULT_ASYNC_TIMEOUT);
+
+            const connection = await dbInjectors.userCollectionConnectorInstance(TestConfig);
+            expect(connection).to.not.be.null;
+
+            const expectedUser = JSON.parse(JSON.stringify(user));
+            expect(await connection.addUser(user)).to.be.a("boolean").and.be.true;
+            return expect(connection.getUser(expectedUser.username)).to.eventually.deep.equal(expectedUser);
+        });
+    })
 });
