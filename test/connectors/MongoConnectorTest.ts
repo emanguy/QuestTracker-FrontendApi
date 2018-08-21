@@ -34,10 +34,18 @@ suite("MongoConnector", function() {
         passwordSalt: "$2b$10$zG4SZGZZKsUBZm3d5PnWte"
     };
 
-    before(async function() {
+    before(function(done) {
         this.timeout(30000);
 
-        await docker.pull("mongo:4.0", {});
+        docker.pull("mongo:4.0", {}, (err, stream) => {
+            if (err) {
+                console.log("Got an error pulling the image.");
+                done(false);
+                return;
+            }
+
+            docker.modem.followProgress(stream, () => done(), () => {});
+        });
     });
 
     beforeEach(async function() {
