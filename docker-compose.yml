@@ -1,0 +1,20 @@
+# This docker-compose file will launch some services that the main quest tracker depends on.
+version: "3"
+
+services:
+  mongo:
+    image: mongo:4
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: aragashion
+      MONGO_INITDB_ROOT_PASSWORD: questrak
+      MONGO_INITDB_DATABASE: quest-tracker
+    volumes:
+      - ./dbInit/:/docker-entrypoint-initdb.d/
+    ports:
+      - "27017:27017"
+  redis:
+    image: bitnami/redis:4.0.9
+    environment:
+      REDIS_PASSWORD: questrak
+    ports:
+      - "6379:6379"

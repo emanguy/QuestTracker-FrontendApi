@@ -1,8 +1,9 @@
 import {Collection, connect, Db, MongoClient, MongoClientOptions} from "mongodb";
-import * as log from "winston";
+import log from "../logger";
+import * as rawLogger from "winston";
 import {Configuration} from "../config";
-import {Objective, ObjectiveUpdate, Quest, QuestUpdate} from "../interfaces/QuestInterfaces";
-import {User} from "../interfaces/AuthInterfaces";
+import {Objective, ObjectiveUpdate, Quest, QuestUpdate, UpdateResult} from "common-interfaces/QuestInterfaces";
+import {User} from "common-interfaces/AuthInterfaces";
 
 let connectedClient: MongoClient|null = null;
 let baseDb: Db|null = null;
@@ -16,7 +17,7 @@ async function mongoConnectionSingleton(config:Configuration) : Promise<Db> {
     const mongoUrl = `mongodb://${config.mongo.hostname}:${config.mongo.port}/`;
     log.info(`Connecting to the database at ${mongoUrl}`);
     connectedClient = await connect(mongoUrl, <MongoClientOptions> {
-        logger: log,
+        logger: rawLogger,
         auth: {
             user: config.mongo.credentials.username,
             password: config.mongo.credentials.password
@@ -57,7 +58,6 @@ export class EmptyUpdateError extends Error {
         super(message);
     }
 }
-
 export class QuestCollectionConnector {
     private backingCollection:Collection<Quest>;
 
@@ -67,7 +67,8 @@ export class QuestCollectionConnector {
     }
 
     async getQuests() : Promise<Quest[]> {
-        return this.getQuestsFilteringVisibility(true);
+        const retVal = await this.backingCollection.find().toArray();
+        return retVal.map(scrubMongoId);
     }
 
     async getQuestsFilteringVisibility(visibleOnly:boolean) : Promise<Quest[]> {
@@ -82,45 +83,54 @@ export class QuestCollectionConnector {
         return result.insertedCount === 1;
     }
 
-    async addObjective(id: string, objective: Objective) : Promise<boolean> {
+    async addObjective(id: string, objective: Objective) : Promise<UpdateResult> {
+        const questExists = (await this.backingCollection.count({id})) === 1;
         const result = await this.backingCollection.updateOne(
             {id},
             { $push: {"objectives": objective}}
         );
 
-        return result.modifiedCount === 1 && result.result.ok === 1;
+        return {documentExisted: questExists, updateSucceeded: result.result.ok === 1};
     }
 
-    async updateQuest(update: QuestUpdate) : Promise<boolean> {
+    /**
+     * @param update The update to apply to the quest.
+     * @throws EmptyUpdateError if the update does not have any properties for updating the quest
+     */
+    async updateQuest(update: QuestUpdate) : Promise<UpdateResult> {
         const quest = await this.findQuestById(update.id);
-        if (!quest) return false;
+        if (!quest) return {documentExisted: false, updateSucceeded: true};
 
-        if (!update.description && !update.questType && !update.sourceRegion)
+        if (!update.description && !update.questType && !update.sourceRegion && update.visible === undefined)
             throw new EmptyUpdateError("Did not provide any fields for update.");
 
         if (update.description) quest.description = update.description;
         if (update.questType) quest.questType = update.questType;
         if (update.sourceRegion) quest.sourceRegion = update.sourceRegion;
+        if (update.visible !== undefined) quest.visible = update.visible;
 
         const result = await this.backingCollection.replaceOne({id: update.id}, quest);
-        return result.result.ok === 1;
+        return {documentExisted: true, updateSucceeded: result.result.ok === 1};
     }
 
-    async updateObjective(update: ObjectiveUpdate) : Promise<boolean> {
+    /**
+     * @param update The update to apply to the objective.
+     * @throws EmptyUpdateError if the update does not have any properties for updating the quest
+     */
+    async updateObjective(update: ObjectiveUpdate) : Promise<UpdateResult> {
         const dbTransaction: ObjectiveUpdateOperation = {};
 
-        if (!update.newDescription && !update.completed)
+        if (!update.text && !update.completed)
             throw new EmptyUpdateError("Did not provide any fields for update.");
 
-        if (update.newDescription) dbTransaction["objectives.$.text"] = update.newDescription;
+        if (update.text) dbTransaction["objectives.$.text"] = update.text;
         if (update.completed) dbTransaction["objectives.$.completed"] = update.completed;
 
-        const result = await this.backingCollection.updateOne(
-            {id: update.questId, "objectives.id": update.objectiveId},
-            {$set: dbTransaction}
-        );
+        const query = {id: update.questId, "objectives.id": update.objectiveId};
+        const matchingObjectiveCount = await this.backingCollection.count({id: update.questId, "objectives.id": update.objectiveId});
+        const result = this.backingCollection.updateOne(query,{$set: dbTransaction});
 
-        return result.modifiedCount === 1 && result.result.ok === 1;
+        return {documentExisted: matchingObjectiveCount === 1, updateSucceeded: (await result).result.ok === 1};
     }
 
     async deleteQuest(id: String) : Promise<boolean> {

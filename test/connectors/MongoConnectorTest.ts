@@ -4,12 +4,12 @@ import {expect} from "chai";
 import * as Docker from "dockerode";
 import {Container} from "dockerode";
 import {DEFAULT_ASYNC_TIMEOUT, DOCKER_STARTUP_TIME, holdUp, UpToDateCreateOptions} from "../testUtil";
-import {Quest, QuestType} from "../../src/interfaces/QuestInterfaces";
+import {Quest, QuestType, UpdateResult} from "common-interfaces/QuestInterfaces";
 import * as chaiAsPromised from "chai-as-promised";
 import dbInjectors, {disconnectFromDb, EmptyUpdateError} from "../../src/connectors/MongoConnector";
 import TestConfig from "../TestConfig";
 import {v4 as uuid} from "uuid";
-import {User} from "../../src/interfaces/AuthInterfaces";
+import {User} from "common-interfaces/AuthInterfaces";
 
 chai.use(chaiAsPromised);
 
@@ -105,12 +105,13 @@ suite("MongoConnector", function() {
            this.timeout(DEFAULT_ASYNC_TIMEOUT);
 
            const connection = await dbInjectors.questCollectionConnectorInstance(TestConfig);
+           const expectedResult: UpdateResult = {documentExisted: true, updateSucceeded: true};
 
            expect(connection).to.not.be.null;
 
            await connection.addQuest(quest);
            const transactionSuccess = await connection.updateQuest({id: quest.id, questType: QuestType.SIDE});
-           expect(transactionSuccess).to.be.a("boolean").and.equal(true);
+           expect(transactionSuccess).to.deep.equal(expectedResult);
 
            const quests = await connection.getQuests();
            expect(quests).to.be.an("array").and.have.lengthOf(1);
@@ -132,6 +133,7 @@ suite("MongoConnector", function() {
 
             const connection = await dbInjectors.questCollectionConnectorInstance(TestConfig);
             const expectedUpdatedQuest: Quest = JSON.parse(JSON.stringify(quest));
+            const expectedResult: UpdateResult = {documentExisted: true, updateSucceeded: true};
             expectedUpdatedQuest.objectives[0].text = "New quest description";
             expectedUpdatedQuest.objectives[0].completed = true;
 
@@ -141,10 +143,10 @@ suite("MongoConnector", function() {
             const transactionSuccess = await connection.updateObjective({
                 questId: quest.id,
                 objectiveId: quest.objectives[0].id,
-                newDescription: expectedUpdatedQuest.objectives[0].text,
+                text: expectedUpdatedQuest.objectives[0].text,
                 completed: expectedUpdatedQuest.objectives[0].completed
             });
-            expect(transactionSuccess).to.be.true;
+            expect(transactionSuccess).to.deep.equal(expectedResult);
 
             return expect(connection.findQuestById(quest.id)).to.eventually.deep.equal(expectedUpdatedQuest);
         });
@@ -157,30 +159,6 @@ suite("MongoConnector", function() {
             expect(connection).to.not.be.null;
             await connection.addQuest(quest);
             return expect(connection.updateObjective({questId: quest.id, objectiveId: quest.objectives[0].id})).to.eventually.be.rejectedWith(EmptyUpdateError);
-        });
-
-        it("can filter on quest visibility", async function() {
-            this.timeout(DEFAULT_ASYNC_TIMEOUT);
-
-            const connection = await dbInjectors.questCollectionConnectorInstance(TestConfig);
-            const invisibleQuest: Quest = {
-                id: uuid(),
-                visible: false,
-                questType: QuestType.MAIN,
-                description: "A description",
-                sourceRegion: "hortimony",
-                objectives: []
-            };
-            expect(connection).to.not.be.null;
-
-            await connection.addQuest(quest);
-            await connection.addQuest(invisibleQuest);
-
-            let returnedQuests = await connection.getQuestsFilteringVisibility(true);
-            expect(returnedQuests).to.have.lengthOf(1).and.deep.equal([quest]);
-            returnedQuests = await connection.getQuestsFilteringVisibility(false);
-            expect(returnedQuests).to.have.lengthOf(2)
-                .and.have.deep.members([quest, invisibleQuest]);
         });
 
         it("can delete a quest", async function() {

@@ -68,6 +68,10 @@
     "@types/express-serve-static-core" "*"
     "@types/serve-static" "*"
 
+"@types/joi@^13.4.4":
+  version "13.4.4"
+  resolved "https://registry.yarnpkg.com/@types/joi/-/joi-13.4.4.tgz#258bda71b30b6f3f9a11eea3e122fccdab8df053"
+
 "@types/mime@*":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-2.0.0.tgz#5a7306e367c539b9f6543499de8dd519fac37a8b"
@@ -82,6 +86,18 @@
   dependencies:
     "@types/bson" "*"
     "@types/events" "*"
+    "@types/node" "*"
+
+"@types/morgan@^1.7.35":
+  version "1.7.35"
+  resolved "https://registry.yarnpkg.com/@types/morgan/-/morgan-1.7.35.tgz#6358f502931cc2583d7a94248c41518baa688494"
+  dependencies:
+    "@types/express" "*"
+
+"@types/node-fetch@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.1.2.tgz#8c5da14d70321e4c4ecd5db668e3f93cf6c7399f"
+  dependencies:
     "@types/node" "*"
 
 "@types/node@*":
@@ -182,6 +198,12 @@ async@^2.6.0:
 balanced-match@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
+
+basic-auth@~2.0.0:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/basic-auth/-/basic-auth-2.0.1.tgz#b998279bf47ce38344b4f3cf916d4679bbf51e3a"
+  dependencies:
+    safe-buffer "5.1.2"
 
 bcrypt@^3.0.0:
   version "3.0.0"
@@ -341,6 +363,18 @@ commander@2.15.1:
   version "2.15.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.15.1.tgz#df46e867d0fc2aec66a34662b406a9ccafff5b0f"
 
+"common-interfaces@github:emanguy/QuestTracker-CommonInterfaces#1.0.1":
+  version "1.0.1"
+  resolved "https://codeload.github.com/emanguy/QuestTracker-CommonInterfaces/tar.gz/457cb02d3da7eba057bfbd61597236cab346595d"
+  dependencies:
+    typescript "^3.1.1"
+
+"common-interfaces@github:emanguy/QuestTracker-CommonInterfaces#1.1.0":
+  version "1.1.0"
+  resolved "https://codeload.github.com/emanguy/QuestTracker-CommonInterfaces/tar.gz/084ce4aeb17331f24eb14659aa4e8fb1138c3064"
+  dependencies:
+    typescript "^3.1.1"
+
 concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
@@ -492,6 +526,16 @@ etag@~1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
 
+express-async-handler@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/express-async-handler/-/express-async-handler-1.1.4.tgz#225a84908df63b35ae9df94b6f0f1af061266426"
+
+express-validation@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/express-validation/-/express-validation-1.0.2.tgz#7d589dd3b257c55b3e004665b6c69cb12cc2b142"
+  dependencies:
+    lodash "^4.9.0"
+
 express@^4.16.3:
   version "4.16.3"
   resolved "https://registry.yarnpkg.com/express/-/express-4.16.3.tgz#6af8a502350db3246ecc4becf6b5a34d22f7ed53"
@@ -613,6 +657,10 @@ he@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/he/-/he-1.1.1.tgz#93410fd21b009735151f8868c2f271f3427e23fd"
 
+hoek@5.x.x:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/hoek/-/hoek-5.0.4.tgz#0f7fa270a1cafeb364a4b2ddfaa33f864e4157da"
+
 http-errors@1.6.2:
   version "1.6.2"
   resolved "https://registry.yarnpkg.com/http-errors/-/http-errors-1.6.2.tgz#0a002cc85707192a7e7946ceedc11155f60ec736"
@@ -630,6 +678,10 @@ http-errors@1.6.3, http-errors@~1.6.2, http-errors@~1.6.3:
     inherits "2.0.3"
     setprototypeof "1.1.0"
     statuses ">= 1.4.0 < 2"
+
+http-status-codes@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/http-status-codes/-/http-status-codes-1.3.0.tgz#9cd0e71391773d0671b489d41cbc5094aa4163b6"
 
 iconv-lite@0.4.19:
   version "0.4.19"
@@ -692,6 +744,20 @@ isarray@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
 
+isemail@3.x.x:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/isemail/-/isemail-3.1.3.tgz#64f37fc113579ea12523165c3ebe3a71a56ce571"
+  dependencies:
+    punycode "2.x.x"
+
+joi@^13.6.0:
+  version "13.6.0"
+  resolved "https://registry.yarnpkg.com/joi/-/joi-13.6.0.tgz#877d820e3ad688a49c32421ffefc746bfbe2d0a0"
+  dependencies:
+    hoek "5.x.x"
+    isemail "3.x.x"
+    topo "3.x.x"
+
 jsonparse@^1.2.0:
   version "1.3.1"
   resolved "https://registry.yarnpkg.com/jsonparse/-/jsonparse-1.3.1.tgz#3f4dae4a91fac315f71062f8521cc239f1366280"
@@ -702,7 +768,7 @@ kuler@1.0.x:
   dependencies:
     colornames "^1.1.1"
 
-lodash@^4.17.10:
+lodash@^4.17.10, lodash@^4.9.0:
   version "4.17.10"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
@@ -810,6 +876,16 @@ mongodb@^3.1.1:
   dependencies:
     mongodb-core "3.1.0"
 
+morgan@^1.9.1:
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/morgan/-/morgan-1.9.1.tgz#0a8d16734a1d9afbc824b99df87e738e58e2da59"
+  dependencies:
+    basic-auth "~2.0.0"
+    debug "2.6.9"
+    depd "~1.1.2"
+    on-finished "~2.3.0"
+    on-headers "~1.0.1"
+
 ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
@@ -833,6 +909,10 @@ needle@^2.2.0:
 negotiator@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.1.tgz#2b327184e8992101177b28563fb5e7102acd0ca9"
+
+node-fetch@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.2.0.tgz#4ee79bde909262f9775f731e3656d0db55ced5b5"
 
 node-pre-gyp@0.10.2:
   version "0.10.2"
@@ -894,6 +974,10 @@ on-finished@~2.3.0:
   dependencies:
     ee-first "1.1.1"
 
+on-headers@~1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/on-headers/-/on-headers-1.0.1.tgz#928f5d0f470d49342651ea6794b0857c100693f7"
+
 once@^1.3.0, once@^1.3.1, once@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/once/-/once-1.4.0.tgz#583b1aa775961d4b113ac17d9c50baef9dd76bd1"
@@ -923,17 +1007,6 @@ parseurl@~1.3.2:
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/parseurl/-/parseurl-1.3.2.tgz#fc289d4ed8993119460c156253262cdc8de65bf3"
 
-passport-strategy@1.x.x:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/passport-strategy/-/passport-strategy-1.0.0.tgz#b5539aa8fc225a3d1ad179476ddf236b440f52e4"
-
-passport@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/passport/-/passport-0.4.0.tgz#c5095691347bd5ad3b5e180238c3914d16f05811"
-  dependencies:
-    passport-strategy "1.x.x"
-    pause "0.0.1"
-
 path-is-absolute@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/path-is-absolute/-/path-is-absolute-1.0.1.tgz#174b9268735534ffbc7ace6bf53a5a9e1b5c5f5f"
@@ -945,10 +1018,6 @@ path-to-regexp@0.1.7:
 pathval@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/pathval/-/pathval-1.1.0.tgz#b942e6d4bde653005ef6b71361def8727d0645e0"
-
-pause@0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/pause/-/pause-0.0.1.tgz#1d408b3fdb76923b9543d96fb4c9dfd535d9cb5d"
 
 process-nextick-args@~1.0.6:
   version "1.0.7"
@@ -971,6 +1040,10 @@ pump@^1.0.0:
   dependencies:
     end-of-stream "^1.1.0"
     once "^1.3.1"
+
+punycode@2.x.x:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
 
 qs@6.5.1:
   version "6.5.1"
@@ -1080,7 +1153,7 @@ safe-buffer@5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.1.tgz#893312af69b2123def71f57889001671eeb2c853"
 
-safe-buffer@^5.1.1, safe-buffer@^5.1.2, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
+safe-buffer@5.1.2, safe-buffer@^5.1.1, safe-buffer@^5.1.2, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.2.tgz#991ec69d296e0313747d59bdfd2b745c35f8828d"
 
@@ -1267,6 +1340,12 @@ to-buffer@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/to-buffer/-/to-buffer-1.1.1.tgz#493bd48f62d7c43fcded313a03dcadb2e1213a80"
 
+topo@3.x.x:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/topo/-/topo-3.0.0.tgz#37e48c330efeac784538e0acd3e62ca5e231fe7a"
+  dependencies:
+    hoek "5.x.x"
+
 triple-beam@^1.2.0, triple-beam@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/triple-beam/-/triple-beam-1.3.0.tgz#a595214c7298db8339eeeee083e4d10bd8cb8dd9"
@@ -1302,6 +1381,10 @@ typedarray@~0.0.5:
 typescript@^2.9.2:
   version "2.9.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.9.2.tgz#1cbf61d05d6b96269244eb6a3bce4bd914e0f00c"
+
+typescript@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.1.1.tgz#3362ba9dd1e482ebb2355b02dfe8bcd19a2c7c96"
 
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"

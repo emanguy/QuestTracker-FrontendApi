@@ -1,11 +1,14 @@
 import * as nonce from "nonce";
 import {compareSync} from "bcrypt";
-import {UserCollectionConnector} from "../connectors/MongoConnector";
-import {RedisConnector} from "../connectors/RedisConnector";
-import {SavedNonce} from "../interfaces/AuthInterfaces";
+import config from "../config";
+import mongoConnectorInstances, {UserCollectionConnector} from "../connectors/MongoConnector";
+import redisInstances, {RedisAuthConnector} from "../connectors/RedisConnector";
+import {SavedNonce} from "common-interfaces/AuthInterfaces";
+
+let loginServiceInstance: AdminLoginService|null = null;
 
 export class AuthFailureError extends Error {
-    private username: string;
+    public readonly username: string;
 
     constructor(message: string, username: string) {
         super(message);
@@ -14,7 +17,7 @@ export class AuthFailureError extends Error {
 }
 
 export class NoUserFoundError extends Error {
-    private username: string;
+    public readonly username: string;
 
     constructor(message: string, username: string) {
         super(message);
@@ -23,8 +26,8 @@ export class NoUserFoundError extends Error {
 }
 
 export class NonceExpiredError extends Error {
-    private username: string;
-    private nonceId: string;
+    public readonly username: string;
+    public readonly nonceId: string;
 
     constructor(message: string, username: string, nonceId: string) {
         super(message);
@@ -33,12 +36,12 @@ export class NonceExpiredError extends Error {
     }
 }
 
-export default class AdminLoginService {
+export class AdminLoginService {
     private mongoConnector : UserCollectionConnector;
-    private redisConnector: RedisConnector;
+    private redisConnector: RedisAuthConnector;
     private nonceGenerator: () => number;
 
-    constructor(mongoConnector: UserCollectionConnector, redisConnector: RedisConnector) {
+    constructor(mongoConnector: UserCollectionConnector, redisConnector: RedisAuthConnector) {
         this.mongoConnector = mongoConnector;
         this.redisConnector = redisConnector;
         this.nonceGenerator = nonce();
@@ -123,4 +126,14 @@ export default class AdminLoginService {
     logOut(username: string, token: string) {
         this.redisConnector.invalidateLoginToken(username, token);
     }
+}
+
+export default async function(): Promise<AdminLoginService> {
+    if (loginServiceInstance === null) {
+        const mongoConnector = mongoConnectorInstances.userCollectionConnectorInstance(config);
+        const redisConnector = redisInstances.authConnectorInstance();
+        loginServiceInstance = new AdminLoginService(await mongoConnector, redisConnector);
+    }
+
+    return loginServiceInstance;
 }

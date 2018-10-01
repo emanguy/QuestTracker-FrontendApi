@@ -1,37 +1,69 @@
 import {createClient, RedisClient} from "redis";
-import {Configuration} from "../config";
+import config, {Configuration} from "../config";
 import {v4 as uuid} from "uuid";
-import * as log from "winston";
+import log from "../logger";
+import {GenericAdd, GenericDeletion, GenericUpdate} from "common-interfaces/QuestInterfaces";
 
-export class RedisConnector {
+let redisConnection: RedisClient|null = null;
+let redisAuthConnectorInstance: RedisAuthConnector|null = null;
+let redisUpdateConnectorInstance: RedisUpdateConnector|null = null;
+
+function redisConnectionSingleton(config: Configuration) {
+    if (redisConnection) return redisConnection;
+    const reconnectTime = 10000;
+
+    if (!config.redis.password) {
+        throw new Error("Tried to connect to redis without a password!");
+    }
+
+    redisConnection = createClient(config.redis.url, {
+        password: config.redis.password,
+        retry_strategy: (options) => {
+            if (options.attempt > 12) {
+                log.error("Lost connection with redis after 12 attempts! Shutting down server.");
+                return Error("Could not connect to redis after 12 attempts.");
+            }
+
+            return reconnectTime;
+        }
+    });
+
+    log.info("Connected to redis.");
+    return redisConnection;
+}
+
+export class RedisUpdateConnector {
+    private client: RedisClient;
+
+    private ADD_CHANNEL = "new-quests";
+    private UPDATE_CHANNEL = "quest-updates";
+    private REMOVE_CHANNEL = "removed-quests";
+
+    constructor(clientInstance: RedisClient) {
+        this.client = clientInstance;
+    }
+
+    pushAdd(add: GenericAdd) {
+        this.client.publish(this.ADD_CHANNEL, JSON.stringify(add));
+    }
+
+    pushUpdate(update: GenericUpdate) {
+        this.client.publish(this.UPDATE_CHANNEL, JSON.stringify(update));
+    }
+
+    pushRemoval(removal: GenericDeletion) {
+        this.client.publish(this.REMOVE_CHANNEL, JSON.stringify(removal));
+    }
+}
+
+export class RedisAuthConnector {
     private client:RedisClient;
 
-    private RECONNECT_WAIT_TIME = 10000;
     private DEFAULT_NONCE_EXPIRATION_TIME = 120;
     private DEFAULT_LOGIN_TOKEN_EXPIRATION_TIME = 1800;
 
-    constructor(config: Configuration) {
-        if (!config.redis.password) {
-            throw new Error("Tried to connect to redis without a password!");
-        }
-
-        this.client = createClient(config.redis.url, {
-            password: config.redis.password,
-            retry_strategy: (options) => {
-                if (options.attempt > 12) {
-                    log.error("Lost connection with redis after 12 attempts! Shutting down server.");
-                    return Error("Could not connect to redis after 12 attempts.");
-                }
-
-                return this.RECONNECT_WAIT_TIME;
-            }
-        });
-
-        log.info("Connected to redis.");
-    }
-
-    disconnect() {
-        this.client.quit();
+    constructor(redisClient: RedisClient) {
+        this.client = redisClient;
     }
 
     /**
@@ -82,5 +114,24 @@ export class RedisConnector {
                 else resolve(true);
             });
         })
+    }
+}
+
+export default {
+    authConnectorInstance: function(): RedisAuthConnector {
+        if (!redisAuthConnectorInstance) {
+            const client = redisConnectionSingleton(config);
+            redisAuthConnectorInstance = new RedisAuthConnector(client);
+        }
+
+        return redisAuthConnectorInstance;
+    },
+    updateConnectorInstance: function(): RedisUpdateConnector {
+        if (!redisUpdateConnectorInstance) {
+            const client = redisConnectionSingleton(config);
+            redisUpdateConnectorInstance = new RedisUpdateConnector(client);
+        }
+
+        return redisUpdateConnectorInstance;
     }
 }
