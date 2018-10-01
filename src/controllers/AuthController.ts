@@ -107,7 +107,6 @@ async function initController() {
 
         const tokenRequest: AccessTokenRequest = req.body;
 
-        // TODO clean up this method, define an interface for the login token thing and stop using type assertions
         try {
             const loginToken = await authService.getAccessToken(req.params.userId, tokenRequest.clientPasswordHash, tokenRequest.serverNonceId, tokenRequest.clientNonce);
             const response: LoginToken = {loginToken};
