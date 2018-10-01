@@ -49,4 +49,4 @@ Services that the frontend API depends on can be started with docker-compose via
 To acquire a login token, the command `yarn run get-auth` can be run. Just be sure to enter your desired testing username and
 password in the appropriate spot in [loginAssist.js](loginAssist.js).
 
-Once that's done, you should be able to hit any of the CRUD endpoints under /quests.
+Once that's done, you should be able to hit any of the CRUD endpoints under /quests. Sample requests for the quest controller can be found [here](https://documenter.getpostman.com/view/863422/RWgjb2so).
