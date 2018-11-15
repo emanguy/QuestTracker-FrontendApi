@@ -104,6 +104,7 @@ export class QuestCollectionConnector {
         if (!update.description && !update.questType && !update.sourceRegion && update.visible === undefined)
             throw new EmptyUpdateError("Did not provide any fields for update.");
 
+        if (update.name) quest.name = update.name;
         if (update.description) quest.description = update.description;
         if (update.questType) quest.questType = update.questType;
         if (update.sourceRegion) quest.sourceRegion = update.sourceRegion;

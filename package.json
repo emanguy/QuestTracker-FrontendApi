@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@types/bcrypt": "^2.0.0",
+    "@types/cors": "^2.8.4",
     "@types/dotenv": "^4.0.3",
     "@types/express": "^4.16.0",
     "@types/joi": "^13.4.4",
@@ -26,7 +27,8 @@
     "@types/winston": "^2.3.9",
     "bcrypt": "^3.0.0",
     "body-parser": "^1.18.3",
-    "common-interfaces": "github:emanguy/QuestTracker-CommonInterfaces#1.1.0",
+    "common-interfaces": "github:emanguy/QuestTracker-CommonInterfaces#1.2.1",
+    "cors": "^2.8.5",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "express-async-handler": "^1.1.4",

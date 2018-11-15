@@ -2,13 +2,15 @@ const bcrypt = require("bcrypt");
 const nonce = require("nonce")(10);
 const fetch = require("node-fetch");
 const HttpStatus = require("http-status-codes");
+const dotenv = require("dotenv");
+dotenv.load();
 
-const USERNAME = "add username here";
-const PASSWORD = "add password here";
+const USERNAME = "emanguy";
+const PASSWORD = "diefool345";
 
 (async function() {
     // Grab a nonce/salt pair for a user. Make sure your .env file has the PROCESS_PORT set to 8080
-    const response = await fetch(`http://localhost:8080/auth/${USERNAME}/nonce`);
+    const response = await fetch(`http://localhost:${process.env.PROCESS_PORT}/auth/${USERNAME}/nonce`);
 
     // If the server responds with a 404, it means the user doesn't exist. Provide a document for convenience.
     if (response.status === HttpStatus.NOT_FOUND) {
@@ -29,7 +31,7 @@ const PASSWORD = "add password here";
 
     // Request login token with nonce-hash
     const authRequest = {clientNonce, clientPasswordHash, serverNonceId: id};
-    const loginTokenResponse = await fetch(`http://localhost:8080/auth/${USERNAME}/login`, {
+    const loginTokenResponse = await fetch(`http://localhost:${process.env.PROCESS_PORT}/auth/${USERNAME}/login`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
