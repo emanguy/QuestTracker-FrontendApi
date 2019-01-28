@@ -101,7 +101,7 @@ export class QuestCollectionConnector {
         const quest = await this.findQuestById(update.id);
         if (!quest) return {documentExisted: false, updateSucceeded: true};
 
-        if (!update.description && !update.questType && !update.sourceRegion && update.visible === undefined)
+        if (!update.name && !update.description && !update.questType && !update.sourceRegion && update.visible === undefined)
             throw new EmptyUpdateError("Did not provide any fields for update.");
 
         if (update.name) quest.name = update.name;
@@ -121,11 +121,11 @@ export class QuestCollectionConnector {
     async updateObjective(update: ObjectiveUpdate) : Promise<UpdateResult> {
         const dbTransaction: ObjectiveUpdateOperation = {};
 
-        if (!update.text && !update.completed)
+        if (!update.text && update.completed === undefined)
             throw new EmptyUpdateError("Did not provide any fields for update.");
 
         if (update.text) dbTransaction["objectives.$.text"] = update.text;
-        if (update.completed) dbTransaction["objectives.$.completed"] = update.completed;
+        if (update.completed !== undefined) dbTransaction["objectives.$.completed"] = update.completed;
 
         const query = {id: update.questId, "objectives.id": update.objectiveId};
         const matchingObjectiveCount = await this.backingCollection.count({id: update.questId, "objectives.id": update.objectiveId});
