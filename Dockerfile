@@ -21,5 +21,6 @@ WORKDIR /srv/
 COPY --from=buildContainer /srv/build/ /srv/build/
 COPY --from=buildContainer /srv/node_modules/ /srv/node_modules/
 EXPOSE 80
+ENV NODE_ENV production
 
 CMD node build/index.js

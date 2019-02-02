@@ -5,8 +5,8 @@ const HttpStatus = require("http-status-codes");
 const dotenv = require("dotenv");
 dotenv.load();
 
-const USERNAME = "emanguy";
-const PASSWORD = "diefool345";
+const USERNAME = "add username here";
+const PASSWORD = "add password here";
 
 (async function() {
     // Grab a nonce/salt pair for a user. Make sure your .env file has the PROCESS_PORT set to 8080
