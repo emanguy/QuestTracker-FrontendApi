@@ -19,6 +19,7 @@ suite("MongoConnector", function() {
     const containersToDelete:Container[] = [];
     const quest: Quest = {
         id: uuid(),
+        name: "My quest",
         visible: true,
         questType: QuestType.MAIN,
         description: "A description",

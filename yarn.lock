@@ -35,6 +35,12 @@
   dependencies:
     "@types/node" "*"
 
+"@types/cors@^2.8.4":
+  version "2.8.4"
+  resolved "https://registry.yarnpkg.com/@types/cors/-/cors-2.8.4.tgz#50991a759a29c0b89492751008c6af7a7c8267b0"
+  dependencies:
+    "@types/express" "*"
+
 "@types/dockerode@^2.5.5":
   version "2.5.5"
   resolved "https://registry.yarnpkg.com/@types/dockerode/-/dockerode-2.5.5.tgz#6346ee3b25abc90a91bd5e220cc6f82b3c1478c0"
@@ -363,15 +369,9 @@ commander@2.15.1:
   version "2.15.1"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.15.1.tgz#df46e867d0fc2aec66a34662b406a9ccafff5b0f"
 
-"common-interfaces@github:emanguy/QuestTracker-CommonInterfaces#1.0.1":
-  version "1.0.1"
-  resolved "https://codeload.github.com/emanguy/QuestTracker-CommonInterfaces/tar.gz/457cb02d3da7eba057bfbd61597236cab346595d"
-  dependencies:
-    typescript "^3.1.1"
-
-"common-interfaces@github:emanguy/QuestTracker-CommonInterfaces#1.1.0":
-  version "1.1.0"
-  resolved "https://codeload.github.com/emanguy/QuestTracker-CommonInterfaces/tar.gz/084ce4aeb17331f24eb14659aa4e8fb1138c3064"
+"common-interfaces@github:emanguy/QuestTracker-CommonInterfaces#1.2.1":
+  version "1.2.1"
+  resolved "https://codeload.github.com/emanguy/QuestTracker-CommonInterfaces/tar.gz/af618b493986efa0f9dabe2a717ed5e08862f25d"
   dependencies:
     typescript "^3.1.1"
 
@@ -410,6 +410,13 @@ cookie@0.3.1:
 core-util-is@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
+
+cors@^2.8.5:
+  version "2.8.5"
+  resolved "https://registry.yarnpkg.com/cors/-/cors-2.8.5.tgz#eac11da51592dd86b9f06f6e7ac293b3df875d29"
+  dependencies:
+    object-assign "^4"
+    vary "^1"
 
 debug@2.6.9, debug@^2.1.2:
   version "2.6.9"
@@ -964,7 +971,7 @@ number-is-nan@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/number-is-nan/-/number-is-nan-1.0.1.tgz#097b602b53422a522c1afb8790318336941a011d"
 
-object-assign@^4.1.0:
+object-assign@^4, object-assign@^4.1.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
 
@@ -1402,7 +1409,7 @@ uuid@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
 
-vary@~1.1.2:
+vary@^1, vary@~1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/vary/-/vary-1.1.2.tgz#2299f02c6ded30d4a5961b0b9f74524a18f634fc"
 
