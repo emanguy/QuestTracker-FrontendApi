@@ -3,7 +3,8 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 export interface Configuration {
-    applicationPort: string | number
+    applicationPort: string | number,
+    environment: string,
     mongo: {
         hostname: string
         port: number
@@ -21,6 +22,7 @@ export interface Configuration {
 
 const config:Configuration = {
     applicationPort: process.env["PROCESS_PORT"] || 80,
+    environment: process.env["NODE_ENV"] || "development",
     mongo: {
         hostname: process.env["MONGO_HOSTNAME"] || "localhost",
         port: +(process.env["MONGO_PORT"] || 27017),
