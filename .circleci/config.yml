@@ -11,8 +11,13 @@ jobs:
       image: ubuntu-2004:202010-01
     steps:
       - run:
-          name: Remove old NVM
-          command: rm -rf /opt/circleci/.nvm/
+          name: "Switch to node 8"
+          command: |
+            source /opt/circleci/.nvm/nvm.sh
+            nvm install 8.17.0
+            nvm alias default 8.17.0
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
       - node/install:
           install-yarn: true
           node-version: 8.17.0 
