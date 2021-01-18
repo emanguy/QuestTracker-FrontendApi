@@ -18,9 +18,7 @@ jobs:
             nvm alias default 8.17.0
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
-      - node/install:
-          install-yarn: true
-          node-version: 8.17.0 
+      - node/install-yarn:
       - checkout
       - node/install-packages:
           pkg-manager: yarn
