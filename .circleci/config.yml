@@ -6,6 +6,7 @@ orbs:
   cloud-run: circleci/gcp-cloud-run@1.0.2
 
 jobs:
+
   test-node-with-docker:
     machine:
       image: ubuntu-2004:202010-01
@@ -27,6 +28,7 @@ jobs:
       - run: 
           name: Run tests
           command: yarn test
+
   deploy-to-cloud-run:
     executor: cloud-run/default
     steps:
@@ -41,12 +43,14 @@ jobs:
 
 workflows:
   version: 2
+
   run-unit-tests:
     jobs:
       - test-node-with-docker:
           filters:
             tags:
               ignore: /.*/
+
   deploy-on-tag:
     jobs:
       - gcp-gcr/build-and-push-image:
