@@ -12,6 +12,11 @@ jobs:
       image: ubuntu-2004:202010-01
     steps:
       - run:
+          name: "Install native libraries for bcrypt"
+          command: |
+            sudo apt update
+            sudo apt install -y build-essential
+      - run:
           name: "Switch to node 8"
           command: |
             source /opt/circleci/.nvm/nvm.sh
@@ -19,12 +24,11 @@ jobs:
             nvm alias default 8.17.0
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
-            sudo apt update
-            sudo apt install -y build-essential
       - node/install-yarn
       - checkout
       - node/install-packages:
           pkg-manager: yarn
+          override-ci-command: yarn install
       - run: 
           name: Run tests
           command: yarn test
