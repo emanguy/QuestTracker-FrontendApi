@@ -15,7 +15,7 @@ jobs:
           name: "Install native libraries for bcrypt"
           command: |
             sudo apt update
-            sudo apt install -y build-essential
+            sudo apt install -y build-essential make g++
       - run:
           name: "Switch to node 8"
           command: |
@@ -26,12 +26,9 @@ jobs:
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
       - node/install-yarn
       - checkout
-      - run:
-          name: Install packages
-          command: |
-            yarn --version
-            yarn node --version
-            yarn install --frozen-lockfile
+      - node/install-packages:
+          pkg-manager: yarn
+          override-ci-command: "bash -c 'yarn install --frozen-lockfile'"
       - run: 
           name: Run tests
           command: yarn test
