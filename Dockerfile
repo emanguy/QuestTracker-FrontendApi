@@ -1,4 +1,4 @@
-FROM node:8-alpine as buildContainer
+FROM node:12-alpine as buildContainer
 
 RUN mkdir -p /srv/
 WORKDIR /srv/
@@ -14,7 +14,7 @@ RUN apk update && \
 
 ####################################
 
-FROM node:8-alpine
+FROM node:12-alpine
 
 RUN mkdir -p /srv/
 WORKDIR /srv/

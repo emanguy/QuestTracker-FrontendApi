@@ -1,0 +1,76 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@4.1.0
+  gcp-gcr: circleci/gcp-gcr@0.11.0
+  cloud-run: circleci/gcp-cloud-run@1.0.2
+
+jobs:
+
+  test-node-with-docker:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - run:
+          name: "Install native libraries for bcrypt"
+          command: |
+            sudo apt update
+            sudo apt install -y build-essential make g++
+      - run:
+          name: "Switch to node 12"
+          command: |
+            source /opt/circleci/.nvm/nvm.sh
+            nvm install 12.9.1
+            nvm alias default 12.9.1
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+      - node/install-yarn
+      - checkout
+      - node/install-packages:
+          pkg-manager: yarn
+      - run: 
+          name: Run tests
+          command: yarn test
+
+  deploy-to-cloud-run:
+    executor: cloud-run/default
+    steps:
+      - cloud-run/init:
+          gcloud-service-key: gcp_service_account_key
+          google-project-id: gcp_project_id
+      - cloud-run/deploy:
+          image: "gcr.io/${gcp_project_id}/frontendapi:<< pipeline.git.tag >>"
+          region: ${gcp_region}
+          service-name: api-service
+          unauthenticated: true
+
+workflows:
+  version: 2
+
+  run-unit-tests:
+    jobs:
+      - test-node-with-docker:
+          filters:
+            tags:
+              ignore: /.*/
+
+  deploy-on-tag:
+    jobs:
+      - gcp-gcr/build-and-push-image:
+          context: "Quest Tracker Data"
+          filters: &deploy-filters
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d\.\d\.\d$/
+          gcloud-service-key: gcp_service_account_key
+          google-project-id: gcp_project_id
+          image: frontendapi
+          tag: << pipeline.git.tag >>
+      - deploy-to-cloud-run:
+          context: "Quest Tracker Data"
+          filters:
+            <<: *deploy-filters
+          requires:
+            - gcp-gcr/build-and-push-image
+
