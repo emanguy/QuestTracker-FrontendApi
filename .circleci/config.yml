@@ -20,8 +20,8 @@ jobs:
           name: "Switch to node 8"
           command: |
             source /opt/circleci/.nvm/nvm.sh
-            nvm install 8.17.0
-            nvm alias default 8.17.0
+            nvm install 12.9.1
+            nvm alias default 12.9.1
             echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
             echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
       - node/install-yarn
