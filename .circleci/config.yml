@@ -17,11 +17,14 @@ jobs:
             sudo apt update
             sudo apt install -y build-essential make g++
       - run:
-          name: Remove existing NVM
-          command: rm -rf $HOME/.nvm
-      - node/install:
-          node-version: 12.9.1
-          install-yarn: true
+          name: "Switch to node 12"
+          command: |
+            source /opt/circleci/.nvm/nvm.sh
+            nvm install 12.9.1
+            nvm alias default 12.9.1
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+      - node/install-yarn
       - checkout
       - node/install-packages:
           pkg-manager: yarn
