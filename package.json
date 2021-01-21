@@ -25,7 +25,7 @@
     "@types/redis": "^2.8.6",
     "@types/uuid": "^3.4.3",
     "@types/winston": "^2.3.9",
-    "bcrypt": "^3.0.0",
+    "bcrypt": "5.x",
     "body-parser": "^1.18.3",
     "common-interfaces": "github:emanguy/QuestTracker-CommonInterfaces#1.2.1",
     "cors": "^2.8.5",
