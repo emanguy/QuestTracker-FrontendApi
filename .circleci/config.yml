@@ -8,13 +8,30 @@ orbs:
 jobs:
 
   test-node-with-docker:
-    docker:
-      - image: "node:8"
+    machine:
+      image: ubuntu-2004:202010-01
     steps:
+      - run:
+          name: "Install native libraries for bcrypt"
+          command: |
+            sudo apt update
+            sudo apt install -y build-essential
+      - run:
+          name: "Switch to node 8"
+          command: |
+            source /opt/circleci/.nvm/nvm.sh
+            nvm install 8.17.0
+            nvm alias default 8.17.0
+            echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+            echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+      - node/install-yarn
       - checkout
-      - setup_remote_docker
-      - node/install-packages:
-          pkg-manager: yarn
+      - run:
+          name: Install packages
+          command: |
+            yarn --version
+            yarn node --version
+            yarn install --frozen-lockfile
       - run: 
           name: Run tests
           command: yarn test
