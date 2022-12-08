@@ -30,7 +30,7 @@
     "common-interfaces": "github:emanguy/QuestTracker-CommonInterfaces#1.2.1",
     "cors": "^2.8.5",
     "dotenv": "^6.0.0",
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "express-async-handler": "^1.1.4",
     "express-validation": "^1.0.2",
     "http-status-codes": "^1.3.0",
